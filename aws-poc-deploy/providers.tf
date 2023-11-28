@@ -29,8 +29,8 @@ provider "databricks" {
   host          = "https://accounts.cloud.databricks.com"
   account_id    = var.databricks_account_id
 
-  client_id     = var.databricks_client_id
-  client_secret = var.databricks_client_secret
+  # client_id     = var.databricks_client_id
+  # client_secret = var.databricks_client_secret
 
   # Optional way of auth
   username   = var.databricks_account_username
@@ -49,8 +49,8 @@ provider "databricks" {
   host          = local.hosts[0]
   account_id    = var.databricks_account_id
 
-  client_id     = var.databricks_client_id
-  client_secret = var.databricks_client_secret
+  # client_id     = var.databricks_client_id
+  # client_secret = var.databricks_client_secret
 
   # Optional way of auth
   username   = var.databricks_account_username

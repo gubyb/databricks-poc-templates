@@ -6,7 +6,8 @@ In this example, we created modules and root level template to deploy multiple D
 2. Edit the locals block in `main.tf` to decide what & how many workspaces to deploy
 3. You need a UC metastore to provide a metastore ID to the deployment. Follow the instructions here: https://docs.databricks.com/en/data-governance/unity-catalog/create-metastore.html or create it using a separate TF module.
 4. Make sure to review the `variables.tf` to fit your region and deploy.
-5. Run `terraform init` and `terraform apply` to deploy 1 or more workspaces into your VPC.
+5. Decide if you want to use account credentials or SP to deploy the workspace, default is account credentials, can be configured to something else by changing the provider.tf file and updating the auth_type variable. 
+6. Run `terraform init` and `terraform apply` to deploy 1 or more workspaces into your VPC.
    
 This modular design also allows customer to deploy, manage and delete `individual` workspace(s) easily, with minimal configuration needed. This template takes heavy reference (e.g. CMK module + Private Links) from https://github.com/andyweaves/databricks-terraform-e2e-examples from andrew.weaver@databricks.com and this repo is adapted to meet specific customer requirements.
 
