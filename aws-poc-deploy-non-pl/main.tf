@@ -41,10 +41,6 @@ module "workspace_collection" {
   root_bucket_name      = each.value.root_bucket_name
   workspace_admins      = each.value.workspace_admins
   metastore_id          = var.metastore_id
-  depends_on = [
-    databricks_mws_vpc_endpoint.relay,
-    databricks_mws_vpc_endpoint.backend_rest_vpce
-  ]
 }
 
 module "uc_catalogs" {

@@ -8,6 +8,8 @@ module "my_mws_network" {
   private_subnet_pair   = var.private_subnet_pair
   availability_zones    = var.availability_zones
   prefix                = "${var.prefix}-network"
+  relay_vpce_id         = var.relay_vpce_id
+  rest_vpce_id          = var.rest_vpce_id
   tags                  = var.tags
 }
 
@@ -43,53 +45,4 @@ resource "databricks_mws_workspaces" "this" {
   network_id               = module.my_mws_network.network_id
 
   depends_on = [module.my_mws_network, module.my_root_bucket]
-}
-
-resource "databricks_metastore_assignment" "metastore_assignment" {
-  metastore_id = var.metastore_id
-  workspace_id = databricks_mws_workspaces.this.workspace_id
-}
-
-data "databricks_user" "workspace_admins" {
-  for_each = toset(var.workspace_admins)
-
-  user_name = each.value
-}
-
-resource "databricks_group" "workspace_admin_group" {
-  display_name = "${var.workspace_name}-admins"
-}
-
-resource "time_sleep" "wait" {
-  depends_on = [
-    databricks_group.workspace_admin_group, databricks_metastore_assignment.metastore_assignment
-  ]
-  create_duration = "300s" # SLA for sync is 5 mins
-}
-
-# Sometimes you need to rerun here because of a delay between account and workspace
-resource "databricks_mws_permission_assignment" "add_groups" {
-  workspace_id = databricks_mws_workspaces.this.workspace_id
-  principal_id = databricks_group.workspace_admin_group.id
-  permissions  = ["ADMIN"]
-
-  depends_on = [time_sleep.wait]
-}
-
-resource "databricks_group_member" "group_members" {
-  for_each = data.databricks_user.workspace_admins
-
-  group_id = databricks_group.workspace_admin_group.id
-  member_id = each.value.id
-}
-
-# Sometimes you need to rerun here because of a delay between account and workspace
-resource "databricks_mws_permission_assignment" "admin_assignments" {
-  for_each = data.databricks_user.workspace_admins
-
-  workspace_id = databricks_mws_workspaces.this.workspace_id
-  principal_id = each.value.id
-  permissions  = ["ADMIN"]
-
-  depends_on = [time_sleep.wait]
 }

@@ -60,20 +60,20 @@ resource "databricks_group" "workspace_admin_group" {
   display_name = "${var.workspace_name}-admins"
 }
 
-resource "time_sleep" "wait" {
+resource "time_sleep" "wait_meta" {
   depends_on = [
     databricks_group.workspace_admin_group, databricks_metastore_assignment.metastore_assignment
   ]
-  create_duration = "300s" # SLA for sync is 5 mins
+  create_duration = "330s"
 }
 
-# Sometimes you need to rerun here because of a delay between account and workspace
+
 resource "databricks_mws_permission_assignment" "add_groups" {
   workspace_id = databricks_mws_workspaces.this.workspace_id
   principal_id = databricks_group.workspace_admin_group.id
   permissions  = ["ADMIN"]
 
-  depends_on = [time_sleep.wait]
+  depends_on = [time_sleep.wait_meta]
 }
 
 resource "databricks_group_member" "group_members" {
@@ -83,7 +83,6 @@ resource "databricks_group_member" "group_members" {
   member_id = each.value.id
 }
 
-# Sometimes you need to rerun here because of a delay between account and workspace
 resource "databricks_mws_permission_assignment" "admin_assignments" {
   for_each = data.databricks_user.workspace_admins
 
@@ -91,5 +90,5 @@ resource "databricks_mws_permission_assignment" "admin_assignments" {
   principal_id = each.value.id
   permissions  = ["ADMIN"]
 
-  depends_on = [time_sleep.wait]
+  depends_on = [time_sleep.wait_meta]
 }

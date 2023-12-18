@@ -44,6 +44,14 @@ variable "root_bucket_name" {
   type = string
 }
 
+variable "relay_vpce_id" {
+  type = list(string)
+}
+
+variable "rest_vpce_id" {
+  type = list(string)
+}
+
 variable "tags" {
   type = map(string)
 }

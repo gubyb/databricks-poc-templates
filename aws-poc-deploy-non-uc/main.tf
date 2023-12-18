@@ -39,32 +39,11 @@ module "workspace_collection" {
   security_group_ids    = [aws_security_group.sg.id]
   private_subnet_pair   = [each.value.private_subnet_pair.subnet1_cidr, each.value.private_subnet_pair.subnet2_cidr]
   root_bucket_name      = each.value.root_bucket_name
+  relay_vpce_id         = [databricks_mws_vpc_endpoint.relay.vpc_endpoint_id]
+  rest_vpce_id          = [databricks_mws_vpc_endpoint.backend_rest_vpce.vpc_endpoint_id]
   workspace_admins      = each.value.workspace_admins
-  metastore_id          = var.metastore_id
   depends_on = [
     databricks_mws_vpc_endpoint.relay,
     databricks_mws_vpc_endpoint.backend_rest_vpce
-  ]
-}
-
-module "uc_catalogs" {
-  for_each = { for each in local.workspace_confs : each.workspace_name => each }
-
-  providers = {
-    databricks = databricks.created_workspace
-    aws        = aws
-  }
-
-  source                = "./modules/mws_uc_catalog"
-  tags = each.value.tags
-  catalog_name = "${each.value.workspace_name}-catalog"
-  workspace_name = each.value.workspace_name
-  prefix = each.value.prefix
-  databricks_account_id = var.databricks_account_id
-  metastore_id = var.metastore_id
-  catalog_force_destroy = true
-
-  depends_on = [
-    module.workspace_collection
   ]
 }
