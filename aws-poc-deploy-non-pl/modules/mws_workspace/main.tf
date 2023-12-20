@@ -20,21 +20,11 @@ module "my_root_bucket" {
 }
 
 
-resource "databricks_mws_private_access_settings" "pas" {
-  account_id                   = var.databricks_account_id
-  private_access_settings_name = "Private Access Settings for ${var.prefix}"
-  region                       = var.region
-  public_access_enabled        = true
-  private_access_level         = "ACCOUNT" // a fix for recent changes - 202209
-}
-
-
 resource "databricks_mws_workspaces" "this" {
   account_id                 = var.databricks_account_id
   aws_region                 = var.region
   workspace_name             = var.workspace_name
-  private_access_settings_id = databricks_mws_private_access_settings.pas.private_access_settings_id
-  pricing_tier               = "ENTERPRISE"
+  pricing_tier               = "PREMIUM"
 
   # deployment_name = local.prefix
 
