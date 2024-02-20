@@ -1,12 +1,20 @@
 resource "aws_s3_bucket" "catalog_root_bucket" {
+  count = var.catalog_reuse_root_bucket ? 0 : 1
+
   bucket        = "${var.catalog_name}-bucket"
   force_destroy = true
   tags          = var.tags
   tags_all      = var.tags
 }
 
+data "aws_s3_bucket" "ws_root_bucket" {
+  bucket = var.root_bucket_name
+}
+
 resource "aws_s3_bucket_public_access_block" "root_storage_bucket" {
-  bucket             = aws_s3_bucket.catalog_root_bucket.id
+  count = var.catalog_reuse_root_bucket ? 0 : 1
+
+  bucket             = aws_s3_bucket.catalog_root_bucket[0].id
   block_public_acls = true
   block_public_policy = true
   restrict_public_buckets = true
@@ -15,18 +23,20 @@ resource "aws_s3_bucket_public_access_block" "root_storage_bucket" {
 }
 
 resource "aws_s3_bucket_versioning" "external_versioning" {
-  bucket = aws_s3_bucket.catalog_root_bucket.id
+  count = var.catalog_reuse_root_bucket ? 0 : 1
+  bucket = aws_s3_bucket.catalog_root_bucket[0].id
   versioning_configuration {
     status = "Disabled"
   }
 }
 
 resource "aws_iam_policy" "external_data_access" {
+  count = var.catalog_reuse_root_bucket ? 0 : 1
   // Terraform's "jsonencode" function converts a
   // Terraform expression's result to valid JSON syntax.
   policy = jsonencode({
     Version = "2012-10-17"
-    Id      = "${aws_s3_bucket.catalog_root_bucket.id}-access"
+    Id      = "${aws_s3_bucket.catalog_root_bucket[0].id}-access"
     Statement = [
       {
         "Action" : [
@@ -39,8 +49,8 @@ resource "aws_iam_policy" "external_data_access" {
           "s3:GetBucketLocation"
         ],
         "Resource" : [
-          aws_s3_bucket.catalog_root_bucket.arn,
-          "${aws_s3_bucket.catalog_root_bucket.arn}/*"
+          aws_s3_bucket.catalog_root_bucket[0].arn,
+          "${aws_s3_bucket.catalog_root_bucket[0].arn}/*"
         ],
         "Effect" : "Allow"
       }
@@ -53,6 +63,7 @@ resource "aws_iam_policy" "external_data_access" {
 data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "passrole_for_uc" {
+  count = var.catalog_reuse_root_bucket ? 0 : 1
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -83,22 +94,25 @@ data "aws_iam_policy_document" "passrole_for_uc" {
 }
 
 resource "aws_iam_role" "external_data_access" {
+  count = var.catalog_reuse_root_bucket ? 0 : 1
   name                = "${var.prefix}-uc-external-location"
-  assume_role_policy  = data.aws_iam_policy_document.passrole_for_uc.json
-  managed_policy_arns = [aws_iam_policy.external_data_access.arn]
+  assume_role_policy  = data.aws_iam_policy_document.passrole_for_uc[0].json
+  managed_policy_arns = [aws_iam_policy.external_data_access[0].arn]
   tags = var.tags
   tags_all = var.tags
 }
 
 resource "databricks_storage_credential" "external" {
-  name     = aws_iam_role.external_data_access.name
+  count = var.catalog_reuse_root_bucket ? 0 : 1
+  name     = aws_iam_role.external_data_access[0].name
   aws_iam_role {
-    role_arn = aws_iam_role.external_data_access.arn
+    role_arn = aws_iam_role.external_data_access[0].arn
   }
   comment = "Managed by TF"
 }
 
 resource "time_sleep" "wait" {
+  count = var.catalog_reuse_root_bucket ? 0 : 1
   depends_on = [
     databricks_storage_credential.external
   ]
@@ -107,13 +121,18 @@ resource "time_sleep" "wait" {
 
 // External Location
 resource "databricks_external_location" "data_example" {
+  count = var.catalog_reuse_root_bucket ? 0 : 1
   name            = "${var.catalog_name}-${var.prefix}-external-location"
-  url             = "s3://${aws_s3_bucket.catalog_root_bucket.id}/"
-  credential_name = databricks_storage_credential.external.id
+  url             = "s3://${aws_s3_bucket.catalog_root_bucket[0].id}/"
+  credential_name = databricks_storage_credential.external[0].id
   comment         = "Managed by TF"
   force_destroy   = var.catalog_force_destroy
 
   depends_on         = [time_sleep.wait]
+}
+
+locals {
+  poc_schemas = ["bronze", "silver", "gold", "sandbox"]
 }
 
 resource "databricks_catalog" "sandbox" {
@@ -123,14 +142,10 @@ resource "databricks_catalog" "sandbox" {
   properties = var.tags
 
   force_destroy = var.catalog_force_destroy
-  storage_root  = "s3://${aws_s3_bucket.catalog_root_bucket.id}/${var.catalog_name}-${var.prefix}-catalog"
+  storage_root  = var.catalog_reuse_root_bucket ? null : "s3://${databricks_external_location.data_example[0].url}/${var.catalog_name}-${var.prefix}-catalog"
   owner = "account users" # Giving account users ownership for POC purpose
 
   depends_on = [databricks_external_location.data_example]
-}
-
-locals {
-  poc_schemas = ["bronze", "silver", "gold", "sandbox"]
 }
 
 resource "databricks_schema" "poc_schemas" {

@@ -9,6 +9,7 @@ module "my_mws_network" {
   availability_zones    = var.availability_zones
   prefix                = "${var.prefix}-network"
   tags                  = var.tags
+  private_dns_enabled   = var.private_dns_enabled
 }
 
 module "my_root_bucket" {

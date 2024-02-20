@@ -36,3 +36,8 @@ variable "security_group_ids" {
 variable "tags" {
   type = map(string)
 }
+
+variable "private_dns_enabled" {
+  type = bool
+  description = "Can only be true for one workspace, DNS applied across the VPC"
+}

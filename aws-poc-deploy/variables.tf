@@ -93,6 +93,7 @@ variable "workspaces" {
     root_bucket_name = string
     tags = map(string)
     workspace_admins = list(string)
+    private_dns_enabled = bool
   }))
   default = []
 }

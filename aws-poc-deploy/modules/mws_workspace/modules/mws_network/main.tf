@@ -52,7 +52,7 @@ resource "aws_vpc_endpoint" "kinesis" {
   tags_all = var.tags
   vpc_endpoint_type = "Interface"
   security_group_ids = var.security_group_ids
-  private_dns_enabled = true
+  private_dns_enabled = var.private_dns_enabled
 }
 
 # STS endpoint
@@ -64,7 +64,7 @@ resource "aws_vpc_endpoint" "sts" {
   tags_all = var.tags
   vpc_endpoint_type = "Interface"
   security_group_ids = var.security_group_ids
-  private_dns_enabled = true
+  private_dns_enabled = var.private_dns_enabled
 }
 
 resource "databricks_mws_networks" "mwsnetwork" {

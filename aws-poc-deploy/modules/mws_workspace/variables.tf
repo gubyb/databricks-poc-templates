@@ -67,3 +67,8 @@ variable "workspace_storage_cmk" {
   type = string
   default = null
 }
+
+variable "private_dns_enabled" {
+  type = bool
+  description = "Can only be true for one workspace, DNS applied across the VPC"
+}

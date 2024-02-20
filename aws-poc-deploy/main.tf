@@ -43,6 +43,7 @@ module "workspace_collection" {
   metastore_id          = var.metastore_id
   managed_storage_cmk   = databricks_mws_customer_managed_keys.managed_storage.customer_managed_key_id
   workspace_storage_cmk = databricks_mws_customer_managed_keys.workspace_storage.customer_managed_key_id
+  private_dns_enabled   = each.value.private_dns_enabled
   depends_on = [
     databricks_mws_vpc_endpoint.relay,
     databricks_mws_vpc_endpoint.backend_rest_vpce
@@ -65,6 +66,8 @@ module "uc_catalogs" {
   databricks_account_id = var.databricks_account_id
   metastore_id = var.metastore_id
   catalog_force_destroy = true
+  catalog_reuse_root_bucket = true
+  root_bucket_name = each.value.root_bucket_name
 
   depends_on = [
     module.workspace_collection

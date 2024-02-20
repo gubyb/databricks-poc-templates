@@ -27,3 +27,12 @@ variable "catalog_force_destroy" {
   type = bool
   default = false
 }
+
+variable "catalog_reuse_root_bucket" {
+  type = bool
+  default = true
+}
+
+variable "root_bucket_name" {
+  type = string
+}
