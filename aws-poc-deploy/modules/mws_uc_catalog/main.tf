@@ -107,22 +107,23 @@ resource "time_sleep" "wait" {
 
 // External Location
 resource "databricks_external_location" "data_example" {
-  name            = "${var.catalog_name}-external-location"
+  name            = "${var.catalog_name}-${var.prefix}-external-location"
   url             = "s3://${aws_s3_bucket.catalog_root_bucket.id}/"
   credential_name = databricks_storage_credential.external.id
   comment         = "Managed by TF"
+  force_destroy   = var.catalog_force_destroy
 
   depends_on         = [time_sleep.wait]
 }
 
 resource "databricks_catalog" "sandbox" {
   metastore_id = var.metastore_id
-  name         = var.catalog_name
+  name         = "${var.catalog_name}-${var.prefix}-catalog"
   comment      = "This catalog is managed by terraform"
   properties = var.tags
 
   force_destroy = var.catalog_force_destroy
-  storage_root  = "s3://${aws_s3_bucket.catalog_root_bucket.id}/${var.catalog_name}"
+  storage_root  = "s3://${aws_s3_bucket.catalog_root_bucket.id}/${var.catalog_name}-${var.prefix}-catalog"
   owner = "account users" # Giving account users ownership for POC purpose
 
   depends_on = [databricks_external_location.data_example]

@@ -42,6 +42,9 @@ resource "databricks_mws_workspaces" "this" {
   storage_configuration_id = module.my_root_bucket.storage_configuration_id
   network_id               = module.my_mws_network.network_id
 
+  managed_services_customer_managed_key_id = var.managed_storage_cmk
+  storage_customer_managed_key_id = var.workspace_storage_cmk
+
   depends_on = [module.my_mws_network, module.my_root_bucket]
 }
 

@@ -57,3 +57,13 @@ variable "metastore_id" {
   type = string
   default = null
 }
+
+variable "managed_storage_cmk" {
+  type = string
+  default = null
+}
+
+variable "workspace_storage_cmk" {
+  type = string
+  default = null
+}

@@ -41,6 +41,8 @@ module "workspace_collection" {
   root_bucket_name      = each.value.root_bucket_name
   workspace_admins      = each.value.workspace_admins
   metastore_id          = var.metastore_id
+  managed_storage_cmk   = databricks_mws_customer_managed_keys.managed_storage.customer_managed_key_id
+  workspace_storage_cmk = databricks_mws_customer_managed_keys.workspace_storage.customer_managed_key_id
   depends_on = [
     databricks_mws_vpc_endpoint.relay,
     databricks_mws_vpc_endpoint.backend_rest_vpce

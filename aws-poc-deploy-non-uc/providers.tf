@@ -11,6 +11,7 @@ terraform {
   required_providers {
     databricks = {
       source = "databricks/databricks"
+      version = "1.29"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -36,7 +37,7 @@ provider "databricks" {
   username   = var.databricks_account_username
   password   = var.databricks_account_password
 
-  auth_type = var.auth_type
+  #auth_type = var.auth_type
 }
 
 locals {
@@ -47,7 +48,7 @@ locals {
 provider "databricks" {
   alias         = "created_workspace"
   host          = local.hosts[0]
-  account_id    = var.databricks_account_id
+  #account_id    = var.databricks_account_id
 
   # client_id     = var.databricks_client_id
   # client_secret = var.databricks_client_secret
@@ -56,5 +57,5 @@ provider "databricks" {
   username   = var.databricks_account_username
   password   = var.databricks_account_password
 
-  auth_type = var.auth_type
+  #auth_type = var.auth_type
 }
