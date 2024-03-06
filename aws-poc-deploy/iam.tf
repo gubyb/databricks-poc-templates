@@ -28,7 +28,6 @@ resource "time_sleep" "wait" {
 # Generate credentials to create and thereafter enter the Databricks workspace
 resource "databricks_mws_credentials" "this" {
   provider         = databricks.mws
-  account_id       = var.databricks_account_id
   role_arn         = aws_iam_role.cross_account_role.arn
   credentials_name = "${local.prefix}-creds"
 }

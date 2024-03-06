@@ -53,6 +53,15 @@ resource "aws_iam_policy" "external_data_access" {
           "${aws_s3_bucket.catalog_root_bucket[0].arn}/*"
         ],
         "Effect" : "Allow"
+      },
+      {
+        "Action" : [
+          "sts:AssumeRole"
+        ],
+        "Resource" : [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.prefix}-uc-access"
+        ],
+        "Effect" : "Allow"
       }
     ]
   })
@@ -95,7 +104,7 @@ data "aws_iam_policy_document" "passrole_for_uc" {
 
 resource "aws_iam_role" "external_data_access" {
   count = var.catalog_reuse_root_bucket ? 0 : 1
-  name                = "${var.prefix}-uc-external-location"
+  name                = "${var.prefix}-uc-access"
   assume_role_policy  = data.aws_iam_policy_document.passrole_for_uc[0].json
   managed_policy_arns = [aws_iam_policy.external_data_access[0].arn]
   tags = var.tags
@@ -142,7 +151,7 @@ resource "databricks_catalog" "sandbox" {
   properties = var.tags
 
   force_destroy = var.catalog_force_destroy
-  storage_root  = var.catalog_reuse_root_bucket ? null : "s3://${databricks_external_location.data_example[0].url}/${var.catalog_name}-${var.prefix}-catalog"
+  storage_root  = var.catalog_reuse_root_bucket ? null : "${databricks_external_location.data_example[0].url}${var.catalog_name}-${var.prefix}-catalog"
   owner = "account users" # Giving account users ownership for POC purpose
 
   depends_on = [databricks_external_location.data_example]

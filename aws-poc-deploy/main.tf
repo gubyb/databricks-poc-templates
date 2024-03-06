@@ -66,7 +66,7 @@ module "uc_catalogs" {
   databricks_account_id = var.databricks_account_id
   metastore_id = var.metastore_id
   catalog_force_destroy = true
-  catalog_reuse_root_bucket = true
+  catalog_reuse_root_bucket = false
   root_bucket_name = each.value.root_bucket_name
 
   depends_on = [
