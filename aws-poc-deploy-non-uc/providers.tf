@@ -11,7 +11,7 @@ terraform {
   required_providers {
     databricks = {
       source = "databricks/databricks"
-      version = "1.29"
+      version = "1.42"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -27,15 +27,16 @@ provider "aws" {
 // initialize provider in "MWS" mode to provision new workspace
 provider "databricks" {
   alias         = "mws"
-  host          = "https://accounts.cloud.databricks.com"
-  account_id    = var.databricks_account_id
+  profile       = "one_env_account"
+  # host          = "https://accounts.cloud.databricks.com"
+  # account_id    = var.databricks_account_id
 
   # client_id     = var.databricks_client_id
   # client_secret = var.databricks_client_secret
 
   # Optional way of auth
-  username   = var.databricks_account_username
-  password   = var.databricks_account_password
+  # username   = var.databricks_account_username
+  # password   = var.databricks_account_password
 
   #auth_type = var.auth_type
 }

@@ -9,29 +9,49 @@ locals {
   sg_egress_ports     = concat([443, 3306, 6666], range(8443, 8451))
   sg_ingress_protocol = ["tcp", "udp"]
   sg_egress_protocol  = ["tcp", "udp"]
-  workspace_confs = var.workspaces
+  workspace_confs     = var.workspaces
   private_subnet_cidrs = flatten([for workspace_conf in local.workspace_confs : [
     workspace_conf.private_subnet_pair.subnet1_cidr,
     workspace_conf.private_subnet_pair.subnet2_cidr
     ]
   ])
-  metastore_admin_group = distinct(var.metastore_admins) 
+  metastore_admin_group = distinct(var.metastore_admins)
 }
 
 resource "databricks_group" "metastore_admin_group" {
+  provider     = databricks.mws
   display_name = "${local.prefix}-metastore-admins"
 }
 
-resource "databricks_group_member" "group_members" {
+data "databricks_user" "metastore_admin_users" {
+  provider = databricks.mws
   for_each = toset(local.metastore_admin_group)
 
-  group_id = databricks_group.metastore_admin_group.id
-  member_id = each.value
+  user_name = each.value
+}
+
+data "databricks_service_principal" "metastore_admin_spn" {
+  provider       = databricks.mws
+  application_id = var.databricks_client_id
+}
+
+resource "databricks_group_member" "metastore_admin_group_users" {
+  for_each  = data.databricks_user.metastore_admin_users
+  provider  = databricks.mws
+  group_id  = databricks_group.metastore_admin_group.id
+  member_id = each.value.id
+}
+
+resource "databricks_group_member" "metastore_admin_group_spn" {
+  provider  = databricks.mws
+  group_id  = databricks_group.metastore_admin_group.id
+  member_id = data.databricks_service_principal.metastore_admin_spn.id
 }
 
 resource "databricks_metastore" "metastore" {
   count = var.metastore_id == null ? 1 : 0
 
+  provider      = databricks.mws
   name          = "${local.prefix}-metastore"
   owner         = databricks_group.metastore_admin_group.display_name
   region        = var.region
@@ -79,18 +99,33 @@ module "uc_catalogs" {
     aws        = aws
   }
 
-  source                = "./modules/mws_uc_catalog"
-  tags = each.value.tags
-  catalog_name = "${each.value.workspace_name}-catalog"
-  workspace_name = each.value.workspace_name
-  prefix = each.value.prefix
-  databricks_account_id = var.databricks_account_id
-  metastore_id          = var.metastore_id == null ? databricks_metastore.metastore[0].id : var.metastore_id
-  catalog_force_destroy = true
+  source                    = "./modules/mws_uc_catalog"
+  tags                      = each.value.tags
+  catalog_name              = "${each.value.workspace_name}-catalog"
+  workspace_name            = each.value.workspace_name
+  prefix                    = each.value.prefix
+  databricks_account_id     = var.databricks_account_id
+  metastore_id              = var.metastore_id == null ? databricks_metastore.metastore[0].id : var.metastore_id
+  catalog_force_destroy     = true
   catalog_reuse_root_bucket = false
-  root_bucket_name = each.value.root_bucket_name
+  root_bucket_name          = each.value.root_bucket_name
 
   depends_on = [
     module.workspace_collection
+  ]
+}
+
+module "ucx_resources" {
+  for_each = { for each in local.workspace_confs : each.workspace_name => each }
+
+  providers = {
+    databricks = databricks.created_workspace
+    aws        = aws
+  }
+
+  source = "./modules/ucx_resources"
+
+  depends_on = [
+    module.uc_catalogs
   ]
 }
