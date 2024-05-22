@@ -32,12 +32,6 @@ provider "databricks" {
 
   client_id     = var.databricks_client_id
   client_secret = var.databricks_client_secret
-
-  # Optional way of auth
-  #username   = var.databricks_account_username
-  #password   = var.databricks_account_password
-
-  #auth_type = var.auth_type
 }
 
 locals {
@@ -51,10 +45,4 @@ provider "databricks" {
 
   client_id     = var.databricks_client_id
   client_secret = var.databricks_client_secret
-
-  # Optional way of auth
-  #username   = var.databricks_account_username
-  #password   = var.databricks_account_password
-
-  #auth_type = var.auth_type
 }
