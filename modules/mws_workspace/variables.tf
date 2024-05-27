@@ -53,7 +53,27 @@ variable "workspace_admins" {
   default = []
 }
 
+variable "databricks_client_id" {
+  type      = string
+  sensitive = true
+}
+
 variable "metastore_id" {
   type = string
   default = null
+}
+
+variable "managed_storage_cmk" {
+  type = string
+  default = null
+}
+
+variable "workspace_storage_cmk" {
+  type = string
+  default = null
+}
+
+variable "private_dns_enabled" {
+  type = bool
+  description = "Can only be true for one workspace, DNS applied across the VPC"
 }

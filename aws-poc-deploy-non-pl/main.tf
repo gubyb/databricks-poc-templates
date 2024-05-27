@@ -26,7 +26,7 @@ module "workspace_collection" {
     aws        = aws
   }
 
-  source                = "./modules/mws_workspace"
+  source                = "../modules/mws_workspace"
   databricks_account_id = var.databricks_account_id
   credentials_id        = databricks_mws_credentials.this.credentials_id
   prefix                = each.value.prefix
@@ -41,6 +41,8 @@ module "workspace_collection" {
   root_bucket_name      = each.value.root_bucket_name
   workspace_admins      = each.value.workspace_admins
   metastore_id          = var.metastore_id
+  private_dns_enabled   = false
+  databricks_client_id  = var.databricks_client_id
 }
 
 module "uc_catalogs" {
@@ -51,7 +53,7 @@ module "uc_catalogs" {
     aws        = aws
   }
 
-  source                = "./modules/mws_uc_catalog"
+  source                = "../modules/mws_uc_catalog"
   tags = each.value.tags
   catalog_name = "${each.value.workspace_name}-catalog"
   workspace_name = each.value.workspace_name
@@ -59,6 +61,7 @@ module "uc_catalogs" {
   databricks_account_id = var.databricks_account_id
   metastore_id = var.metastore_id
   catalog_force_destroy = true
+  root_bucket_name      = each.value.root_bucket_name
 
   depends_on = [
     module.workspace_collection

@@ -30,6 +30,8 @@ resource "databricks_mws_credentials" "this" {
   provider         = databricks.mws
   role_arn         = aws_iam_role.cross_account_role.arn
   credentials_name = "${local.prefix}-creds"
+
+  depends_on = [ time_sleep.wait ]
 }
 
 output "policy" {

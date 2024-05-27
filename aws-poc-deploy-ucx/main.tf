@@ -67,7 +67,7 @@ module "workspace_collection" {
     aws        = aws
   }
 
-  source                = "./modules/mws_workspace"
+  source                = "../modules/mws_workspace"
   databricks_account_id = var.databricks_account_id
   credentials_id        = databricks_mws_credentials.this.credentials_id
   prefix                = each.value.prefix
@@ -85,6 +85,7 @@ module "workspace_collection" {
   managed_storage_cmk   = databricks_mws_customer_managed_keys.managed_storage.customer_managed_key_id
   workspace_storage_cmk = databricks_mws_customer_managed_keys.workspace_storage.customer_managed_key_id
   private_dns_enabled   = each.value.private_dns_enabled
+  databricks_client_id = var.databricks_client_id
   depends_on = [
     databricks_mws_vpc_endpoint.relay,
     databricks_mws_vpc_endpoint.backend_rest_vpce
@@ -99,7 +100,7 @@ module "uc_catalogs" {
     aws        = aws
   }
 
-  source                    = "./modules/mws_uc_catalog"
+  source                    = "../modules/mws_uc_catalog"
   tags                      = each.value.tags
   catalog_name              = "${each.value.workspace_name}-catalog"
   workspace_name            = each.value.workspace_name
@@ -111,7 +112,7 @@ module "uc_catalogs" {
   root_bucket_name          = each.value.root_bucket_name
 
   depends_on = [
-    module.workspace_collection
+    module.workspace_collection, databricks_group.metastore_admin_group
   ]
 }
 
@@ -123,7 +124,7 @@ module "ucx_resources" {
     aws        = aws
   }
 
-  source = "./modules/ucx_resources"
+  source = "../modules/ucx_resources"
 
   depends_on = [
     module.uc_catalogs

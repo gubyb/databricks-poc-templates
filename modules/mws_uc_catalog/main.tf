@@ -111,6 +111,10 @@ resource "aws_iam_role" "external_data_access" {
   tags_all = var.tags
 }
 
+data "databricks_group" "workspace_admin_group" {
+  display_name = "${var.workspace_name}-admins"
+}
+
 resource "databricks_storage_credential" "external" {
   count = var.catalog_reuse_root_bucket ? 0 : 1
   name     = aws_iam_role.external_data_access[0].name
@@ -118,6 +122,16 @@ resource "databricks_storage_credential" "external" {
     role_arn = aws_iam_role.external_data_access[0].arn
   }
   comment = "Managed by TF"
+
+  owner = data.databricks_group.workspace_admin_group.display_name
+}
+
+resource "databricks_grants" "external_all_privileges" {
+  storage_credential = databricks_storage_credential.external[0].id
+  grant {
+    principal  = data.databricks_group.workspace_admin_group.display_name
+    privileges = ["ALL_PRIVILEGES"]
+  }
 }
 
 resource "time_sleep" "wait" {
@@ -125,7 +139,7 @@ resource "time_sleep" "wait" {
   depends_on = [
     databricks_storage_credential.external
   ]
-  create_duration = "20s"
+  create_duration = "60s"
 }
 
 // External Location
@@ -136,8 +150,16 @@ resource "databricks_external_location" "data_example" {
   credential_name = databricks_storage_credential.external[0].id
   comment         = "Managed by TF"
   force_destroy   = var.catalog_force_destroy
-
+  owner = data.databricks_group.workspace_admin_group.display_name
   depends_on         = [time_sleep.wait]
+}
+
+resource "databricks_grants" "external_loc_all_privileges" {
+  external_location = databricks_external_location.data_example[0].id
+  grant {
+    principal  = data.databricks_group.workspace_admin_group.display_name
+    privileges = ["ALL_PRIVILEGES"]
+  }
 }
 
 locals {
@@ -152,8 +174,6 @@ resource "databricks_catalog" "sandbox" {
 
   force_destroy = var.catalog_force_destroy
   storage_root  = var.catalog_reuse_root_bucket ? null : "${databricks_external_location.data_example[0].url}${var.catalog_name}-${var.prefix}-catalog"
-  owner = "account users" # Giving account users ownership for POC purpose
-
   depends_on = [databricks_external_location.data_example]
 }
 
@@ -164,6 +184,5 @@ resource "databricks_schema" "poc_schemas" {
   name          = local.poc_schemas[count.index]
   properties = var.tags
   comment = "This schema is managed by terraform"
-  owner = "account users" # Giving account users ownership for POC purpose
   force_destroy = true
 }
