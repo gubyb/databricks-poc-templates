@@ -16,6 +16,24 @@ locals {
     ]
   ])
   metastore_admin_group = distinct(var.metastore_admins)
+  groups = [
+    {
+      name = "group_1",
+      type = "USER"
+    },
+    {
+      name = "group_2",
+      type = "USER"
+    },
+    {
+      name = "group_3",
+      type = "USER"
+    },
+    {
+      name = "group_4",
+      type = "USER"
+    }
+  ]
 }
 
 resource "databricks_group" "metastore_admin_group" {
@@ -114,4 +132,43 @@ module "uc_catalogs" {
   depends_on = [
     module.workspace_collection, databricks_group.metastore_admin_group
   ]
+}
+
+module "groups" {
+  for_each = { for each in local.groups : each.name => each }
+
+  providers = {
+    databricks = databricks.mws
+  }
+
+  source  = "../modules/databricks_groups"
+
+  group_name = each.value.name
+}
+
+locals {
+  workspace_assingments = distinct(flatten([
+    for workspace_conf in local.workspace_confs : [
+      for group in local.groups : {
+        workspace_conf = workspace_conf
+        group    = group
+      }
+    ]
+  ]))
+}
+
+module "workspace_assignments" {
+  for_each      = { for entry in local.workspace_assingments: "${entry.workspace_conf.workspace_name}_${entry.group.name}" => entry }
+
+  source  = "../modules/databricks_group_assignments"
+
+  providers = {
+    databricks = databricks.mws
+  }
+
+  group_id   = module.groups[each.value.group.name].group_id
+  group_type = each.value.group.type
+  workspace_id = module.workspace_collection[each.value.workspace_conf.workspace_name].workspace_id
+
+  depends_on = [ module.groups ]
 }
