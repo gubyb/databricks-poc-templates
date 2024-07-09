@@ -150,17 +150,17 @@ resource "databricks_external_location" "data_example" {
   credential_name = databricks_storage_credential.external[0].id
   comment         = "Managed by TF"
   force_destroy   = var.catalog_force_destroy
-  owner = data.databricks_group.workspace_admin_group.display_name
+  #owner = data.databricks_group.workspace_admin_group.display_name
   depends_on         = [time_sleep.wait]
 }
 
-resource "databricks_grants" "external_loc_all_privileges" {
-  external_location = databricks_external_location.data_example[0].id
-  grant {
-    principal  = data.databricks_group.workspace_admin_group.display_name
-    privileges = ["ALL_PRIVILEGES"]
-  }
-}
+# resource "databricks_grants" "external_loc_all_privileges" {
+#   external_location = databricks_external_location.data_example[0].id
+#   grant {
+#     principal  = data.databricks_group.workspace_admin_group.display_name
+#     privileges = ["ALL_PRIVILEGES"]
+#   }
+# }
 
 locals {
   poc_schemas = ["bronze", "silver", "gold", "sandbox"]
@@ -173,7 +173,7 @@ resource "databricks_catalog" "sandbox" {
   properties = var.tags
 
   force_destroy = var.catalog_force_destroy
-  storage_root  = var.catalog_reuse_root_bucket ? null : "${databricks_external_location.data_example[0].url}${var.catalog_name}-${var.prefix}-catalog"
+  storage_root  = var.catalog_reuse_root_bucket ? null : "${databricks_external_location.data_example[0].url}catalogs"
   depends_on = [databricks_external_location.data_example]
 }
 

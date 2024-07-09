@@ -3,11 +3,6 @@ output "databricks_hosts" {
     for k, ws in module.workspace_collection : k => ws.workspace_url
   })
 }
-
-output "arn" {
-  value = aws_iam_role.cross_account_role.arn
-}
-
 /*
 // export token for integration tests to run on
 output "databricks_token" {

@@ -26,14 +26,6 @@ resource "time_sleep" "wait" {
 }
 
 # Generate credentials to create and thereafter enter the Databricks workspace
-# Generate credentials to create and thereafter enter the Databricks workspace
-resource "databricks_mws_credentials" "this" {
-  provider         = databricks.mws
-  role_arn         = aws_iam_role.cross_account_role.arn
-  credentials_name = "${local.prefix}-creds"
-
-  depends_on = [ time_sleep.wait ]
-}
 
 output "policy" {
   value = data.databricks_aws_crossaccount_policy.this.json

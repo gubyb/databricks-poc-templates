@@ -1,11 +1,11 @@
-resource "databricks_job" "test_create_tables_381827319899207" {
+resource "databricks_job" "test_create_tables" {
   task {
     task_key = "external"
     run_if   = "ALL_SUCCESS"
     notification_settings {
     }
     notebook_task {
-      notebook_path = databricks_notebook.workspace_shared_test_hms_stuff_external_775639255079376.id
+      notebook_path = databricks_notebook.workspace_shared_test_hms_stuff_external.id
     }
     job_cluster_key = "test_create_tables"
   }
@@ -15,7 +15,7 @@ resource "databricks_job" "test_create_tables_381827319899207" {
     notification_settings {
     }
     notebook_task {
-      notebook_path = databricks_notebook.workspace_shared_test_hms_stuff_managed_775639255079334.id
+      notebook_path = databricks_notebook.workspace_shared_test_hms_stuff_managed.id
     }
     job_cluster_key = "test_create_tables"
   }

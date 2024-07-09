@@ -110,25 +110,3 @@ resource "aws_kms_alias" "managed_storage_key_alias" {
   name          = "alias/${var.prefix}-managed-storage-key-alias"
   target_key_id = aws_kms_key.managed_storage.key_id
 }
-
-// Managed Key Configuration
-resource "databricks_mws_customer_managed_keys" "managed_storage" {
-  provider         = databricks.mws
-  account_id = var.databricks_account_id
-  aws_key_info {
-    key_arn   = aws_kms_key.managed_storage.arn
-    key_alias = aws_kms_alias.managed_storage_key_alias.name
-  }
-  use_cases = ["MANAGED_SERVICES"]
-}
-
-// Workspace Storage Key Configuration
-resource "databricks_mws_customer_managed_keys" "workspace_storage" {
-  provider         = databricks.mws
-  account_id = var.databricks_account_id
-  aws_key_info {
-    key_arn   = aws_kms_key.workspace_storage.arn
-    key_alias = aws_kms_alias.workspace_storage_key_alias.name
-  }
-  use_cases = ["STORAGE"]
-}

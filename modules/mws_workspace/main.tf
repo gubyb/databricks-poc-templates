@@ -63,8 +63,27 @@ data "databricks_user" "workspace_admins" {
 data "databricks_service_principal" "admin_spn" {
   application_id = var.databricks_client_id
 }
+
+resource "databricks_service_principal" "user_spn" {
+  display_name = "${var.prefix}-user-spn"
+}
+
 resource "databricks_group" "workspace_admin_group" {
   display_name = "${var.workspace_name}-admins"
+}
+
+resource "databricks_access_control_rule_set" "automation_sp_rule_set" {
+  name = "accounts/${var.databricks_account_id}/servicePrincipals/${databricks_service_principal.user_spn.application_id}/ruleSets/default"
+
+  grant_rules {
+    principals = [databricks_group.workspace_admin_group.acl_principal_id]
+    role       = "roles/servicePrincipal.user"
+  }
+
+  grant_rules {
+    principals = [databricks_group.workspace_admin_group.acl_principal_id]
+    role       = "roles/servicePrincipal.manager"
+  }
 }
 
 resource "time_sleep" "wait" {
@@ -79,6 +98,14 @@ resource "databricks_mws_permission_assignment" "add_groups" {
   workspace_id = databricks_mws_workspaces.this.workspace_id
   principal_id = databricks_group.workspace_admin_group.id
   permissions  = ["ADMIN"]
+
+  depends_on = [time_sleep.wait]
+}
+
+resource "databricks_mws_permission_assignment" "add_user_spn" {
+  workspace_id = databricks_mws_workspaces.this.workspace_id
+  principal_id = databricks_service_principal.user_spn.id
+  permissions  = ["USER"]
 
   depends_on = [time_sleep.wait]
 }
