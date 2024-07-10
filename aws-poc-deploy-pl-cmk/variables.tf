@@ -85,3 +85,19 @@ variable "metastore_id" {
   type = string
   default = null
 }
+
+variable "enable_external_hms" {
+  type = bool
+  default = false
+}
+
+variable "create_legacy_resources" {
+  type = bool
+  default = false
+}
+
+
+variable "rds_password" {
+  type = string
+  default = "defaultpasswordpleasechange"
+}

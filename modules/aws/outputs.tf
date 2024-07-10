@@ -45,3 +45,11 @@ output "cross_account_role_name" {
 output "aws_sg_id" {
   value = aws_security_group.sg.id
 }
+
+output "aws_pl_sg_id" {
+  value = aws_security_group.privatelink.id
+}
+
+output "pl_subnet_id" {
+  value = aws_subnet.privatelink[0].id
+}

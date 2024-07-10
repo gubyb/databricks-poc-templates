@@ -9,6 +9,15 @@ resource "aws_security_group" "privatelink" {
     security_groups = [aws_security_group.sg.id]
   }
 
+# Optional, allows for PE to rds
+  ingress {
+    description     = "Inbound rules"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg.id]
+  }
+
   ingress {
     description     = "Inbound rules"
     from_port       = 6666
@@ -21,6 +30,15 @@ resource "aws_security_group" "privatelink" {
     description     = "Outbound rules"
     from_port       = 443
     to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg.id]
+  }
+
+# Optional, allows for PE to rds
+  egress {
+    description     = "Outbound rules"
+    from_port       = 3306
+    to_port         = 3306
     protocol        = "tcp"
     security_groups = [aws_security_group.sg.id]
   }

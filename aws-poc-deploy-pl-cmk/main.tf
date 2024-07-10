@@ -179,6 +179,7 @@ module "uc_catalogs" {
 }
 
 module "ucx_resources" {
+  # count  = var.create_legacy_resources ? 1 : 0 need to fix
   for_each = { for each in local.workspace_confs : each.workspace_name => each }
 
   providers = {
@@ -198,4 +199,25 @@ module "ucx_resources" {
   depends_on = [
     module.uc_catalogs
   ]
+}
+
+module "external_hms" {
+  count  = var.enable_external_hms ? 1 : 0
+  providers = {
+    databricks = databricks.created_workspace
+    aws        = aws
+  }
+
+  source = "../modules/external_hms"
+
+  tags = var.tags
+  region = var.region
+  availability_zones = var.availability_zones
+  vpc_cidr = "10.0.0.0/16" #Default value
+  prefix = var.prefix
+  private_subnets_cidr = ["10.0.4.0/23", "10.0.6.0/23"] #Default value
+  rds_password = var.rds_password
+  db_pl_subnet_id = module.aws_resources.pl_subnet_id
+  db_vpc_id = module.aws_resources.vpc_id
+  db_pl_sg_id = module.aws_resources.aws_pl_sg_id
 }
