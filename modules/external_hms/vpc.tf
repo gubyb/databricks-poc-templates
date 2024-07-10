@@ -55,6 +55,31 @@ resource "aws_route_table_association" "dataplane_vpce_rtb" {
   route_table_id = aws_route_table.private_subnet_rt.id
 }
 
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.mainvpc.id
+
+  ingress {
+    protocol  = -1
+    self      = true
+    from_port = 0
+    to_port   = 0
+  }
+
+  ingress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_security_group" "rds_sg" {
   vpc_id = aws_vpc.mainvpc.id
 
@@ -63,40 +88,18 @@ resource "aws_security_group" "rds_sg" {
 
   # Add any additional ingress/egress rules as needed
   ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    self      = true
-  }
-
-  # Allow all
-  ingress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
+    description     = "Inbound rules"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_default_security_group.default.id]
   }
 
   egress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Allow all
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
   }
 
   tags = merge(var.tags, {
@@ -143,7 +146,7 @@ resource "aws_lb" "rds_nlb" {
   load_balancer_type               = "network"
   subnets                          = aws_subnet.private_subnet[*].id
   enable_cross_zone_load_balancing = false
-  security_groups = [aws_security_group.rds_sg.id]
+  security_groups = [aws_default_security_group.default.id]
   tags = merge(var.tags, {
     Name = "${var.prefix}-rds-nlb"
   })

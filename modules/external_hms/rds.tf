@@ -8,15 +8,15 @@ resource "aws_db_instance" "default" {
   engine_version    = "8.0.35"
   instance_class    = "db.m6gd.large"
   username          = "admin"
-  password          = "gustavadmin"
+  password          = var.rds_password
   port              = 3306
   multi_az          = false
 
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
 
-  skip_final_snapshot = false
-  final_snapshot_identifier = "finalsnap"
+  skip_final_snapshot = true
+  #final_snapshot_identifier = "finalsnap"
 
   tags = merge(var.tags, {
     Name = "${var.prefix}-rds-instance"
