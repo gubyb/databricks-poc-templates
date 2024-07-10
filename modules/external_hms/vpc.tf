@@ -95,6 +95,14 @@ resource "aws_security_group" "rds_sg" {
     security_groups = [aws_default_security_group.default.id]
   }
 
+  ingress {
+    description     = "Inbound rules"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_default_security_group.default.id]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -157,6 +165,22 @@ resource "aws_lb" "rds_nlb" {
 resource "aws_lb_listener" "rds_nlb_listener" {
   load_balancer_arn = aws_lb.rds_nlb.arn
   port              = 3306
+  protocol          = "TCP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.rds_ip_target_group.arn
+  }
+
+  tags = merge(var.tags, {
+    Name = "${var.prefix}-rds-nlb-listener"
+  })
+
+  tags_all = var.tags
+}
+
+resource "aws_lb_listener" "rds_nlb_health_listener" {
+  load_balancer_arn = aws_lb.rds_nlb.arn
+  port              = 443
   protocol          = "TCP"
   default_action {
     type             = "forward"
