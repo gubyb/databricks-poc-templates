@@ -266,54 +266,12 @@ resource "aws_iam_role" "external_data_access" {
   tags_all = var.tags
 }
 
-# resource "databricks_storage_credential" "external" {
-#   name     = aws_iam_role.external_data_access.name
-#   aws_iam_role {
-#     role_arn = aws_iam_role.external_data_access.arn
-#   }
-#   comment = "Managed by TF"
 
-#   owner = "account users"
-# }
-
-# resource "databricks_grants" "external_all_privileges" {
-#   storage_credential = databricks_storage_credential.external.id
-#   grant {
-#     principal  = "account users"
-#     privileges = ["ALL_PRIVILEGES"]
-#   }
-# }
-
-# resource "time_sleep" "wait_uc" {
-#   depends_on = [
-#     databricks_storage_credential.external
-#   ]
-#   create_duration = "60s"
-# }
-
-// External Location
-# resource "databricks_external_location" "data_example" {
-#   name            = "${var.prefix}-external-location-instance-profile"
-#   url             = "s3://${aws_s3_bucket.instance_profile_bucket.id}/"
-#   credential_name = databricks_storage_credential.external.id
-#   comment         = "Managed by TF"
-#   force_destroy   = true
-#   depends_on         = [time_sleep.wait_uc]
-# }
-
-# resource "databricks_grants" "external_loc_all_privileges" {
-#   external_location = databricks_external_location.data_example.id
-#   grant {
-#     principal  = "account users"
-#     privileges = ["ALL_PRIVILEGES"]
-#   }
-# }
-
-data "databricks_service_principal" "user_spn" {
-  display_name = "tf-ws-gustav-test-user-spn"
+resource "databricks_service_principal" "instance_profile_spn" {
+  display_name = "${var.prefix}-instance-prof-spn"
 }
 
 resource "databricks_service_principal_role" "my_spn_instance_profile" {
-  service_principal_id = data.databricks_service_principal.user_spn.id
+  service_principal_id = databricks_service_principal.instance_profile_spn.id
   role     = databricks_instance_profile.shared.id
 }
