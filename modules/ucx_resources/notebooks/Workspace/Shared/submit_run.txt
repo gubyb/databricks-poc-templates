@@ -1,0 +1,1 @@
+databricks jobs submit --json '{"tasks":[{"task_key":"nb_task","description":"Task","timeout_seconds":86400,"new_cluster":{"num_workers":1,"node_type_id":"r6id.xlarge","spark_version":"10.4.x-cpu-ml-scala2.12"},"notebook_task":{"notebook_path":"/Workspace/Shared/submit_run"}}],"run_name":"submit_run","timeout_seconds":86400}'
