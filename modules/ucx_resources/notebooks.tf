@@ -16,3 +16,8 @@ resource "databricks_notebook" "test_boto3" {
   source = "${path.module}/notebooks/Workspace/Shared/test_boto3.py"
   path   = "/Workspace/Shared/test_boto3"
 }
+
+resource "databricks_notebook" "submit_run" {
+  source = "${path.module}/notebooks/Workspace/Shared/submit_run.py"
+  path   = "/Workspace/Shared/submit_run"
+}

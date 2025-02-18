@@ -14,6 +14,22 @@ resource "databricks_cluster" "test_no_uc_0520_121619_7fevb76h" {
   autotermination_minutes = 10
 }
 
+resource "databricks_cluster" "shared_mlr_no_isolation" {
+  spark_version      = "10.4.x-cpu-ml-scala2.12"
+  runtime_engine     = "STANDARD"
+  num_workers        = 1
+  node_type_id       = "r6id.xlarge"
+  data_security_mode = "NONE"
+  cluster_name       = "shared_mlr_no_isolation"
+  aws_attributes {
+    zone_id                = "auto"
+    spot_bid_price_percent = 100
+    first_on_demand        = 1
+    availability           = "SPOT_WITH_FALLBACK"
+  }
+  autotermination_minutes = 10
+}
+
 resource "databricks_sql_endpoint" "ucx_wh" {
   name             = "Endpoint for UCX"
   cluster_size     = "2X-Small"

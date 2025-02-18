@@ -22,3 +22,8 @@ variable "databricks_account_id" {
 variable "workspace_name" {
   type = string
 }
+
+variable "node_type" {
+  type = string
+  default = "r6id.xlarge"
+}

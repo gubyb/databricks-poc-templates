@@ -150,6 +150,7 @@ resource "databricks_external_location" "data_example" {
   credential_name = databricks_storage_credential.external[0].id
   comment         = "Managed by TF"
   force_destroy   = var.catalog_force_destroy
+  owner = data.databricks_group.workspace_admin_group.display_name
   #owner = data.databricks_group.workspace_admin_group.display_name
   depends_on         = [time_sleep.wait]
 }
@@ -185,4 +186,12 @@ resource "databricks_schema" "poc_schemas" {
   properties = var.tags
   comment = "This schema is managed by terraform"
   force_destroy = true
+}
+
+resource "databricks_system_schema" "system_schema_access" {
+  schema = "access"
+}
+
+resource "databricks_system_schema" "system_schema_compute" {
+  schema = "compute"
 }
