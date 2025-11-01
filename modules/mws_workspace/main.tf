@@ -72,19 +72,19 @@ resource "databricks_group" "workspace_admin_group" {
   display_name = "${var.workspace_name}-admins"
 }
 
-resource "databricks_access_control_rule_set" "automation_sp_rule_set" {
-  name = "accounts/${var.databricks_account_id}/servicePrincipals/${databricks_service_principal.user_spn.application_id}/ruleSets/default"
+# resource "databricks_access_control_rule_set" "automation_sp_rule_set" {
+#   name = "accounts/${var.databricks_account_id}/servicePrincipals/${databricks_service_principal.user_spn.application_id}/ruleSets/default"
 
-  grant_rules {
-    principals = [databricks_group.workspace_admin_group.acl_principal_id]
-    role       = "roles/servicePrincipal.user"
-  }
+#   grant_rules {
+#     principals = [databricks_group.workspace_admin_group.acl_principal_id]
+#     role       = "roles/servicePrincipal.user"
+#   }
 
-  grant_rules {
-    principals = [databricks_group.workspace_admin_group.acl_principal_id]
-    role       = "roles/servicePrincipal.manager"
-  }
-}
+#   grant_rules {
+#     principals = [databricks_group.workspace_admin_group.acl_principal_id]
+#     role       = "roles/servicePrincipal.manager"
+#   }
+# }
 
 resource "time_sleep" "wait" {
   depends_on = [

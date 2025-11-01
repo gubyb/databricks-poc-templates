@@ -18,6 +18,10 @@ variable "azure_sub_id" {
   description = "Azure sub ID"
 }
 
+variable "azure_tenant_id" {
+  type        = string
+  description = "Azure tenant ID"
+}
 
 variable "region" {
   type        = string
@@ -41,7 +45,7 @@ variable "vpc_cidr" {
   default = "10.109.0.0/17"
 }
 
-variable "metastore_admins" {
+variable "admins" {
   type    = list(string)
 }
 

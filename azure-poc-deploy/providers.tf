@@ -23,16 +23,19 @@ terraform {
 provider "azurerm" {
   features {}
   subscription_id = var.azure_sub_id
+  tenant_id = var.azure_tenant_id
 }
 
 // initialize provider in "MWS" mode to provision new workspace
 provider "databricks" {
-  alias         = "mws"
+  alias         = "account"
   host          = "https://accounts.azuredatabricks.net"
   account_id    = var.databricks_account_id
+}
 
-  client_id     = var.databricks_client_id
-  client_secret = var.databricks_client_secret
+provider "databricks" {
+  alias         = "created_workspace"
+  host          = module.azure_resources.databricks_host
 }
 
 # locals {
